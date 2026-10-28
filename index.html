@@ -7,7 +7,7 @@
 <title>写真から文字 / Photo to Text</title></head>
 <body>
 <header class="top"><h1 data-t="app"></h1>
-  <div class="switches"><button id="big" class="chip" aria-pressed="false" data-t="big"></button><button id="lang" class="chip">English</button></div></header>
+  <div class="switches"><button id="big" class="chip" aria-pressed="false" data-t="big"></button><button id="lang" class="chip">English</button><button id="openSet" class="chip" data-t="set"></button></div></header>
 <main>
   <p class="lead" data-t="lead"></p>
   <div class="row">
@@ -31,6 +31,14 @@
     <div class="row"><button class="btn" id="copy" data-t="copy"></button><button class="btn" id="share" data-t="share"></button><button class="btn" id="save" data-t="save"></button></div>
   </section>
   <p class="note" data-t="note"></p>
+  <dialog id="settings"><h2 data-t="setT"></h2>
+    <label class="small"><span data-t="prov"></span> <select id="prov"><option value="gemini">Google Gemini</option><option value="pollinations">Pollinations</option></select></label>
+    <label class="small"><span data-t="keyL"></span><input id="key" type="password" autocomplete="off" spellcheck="false" style="width:100%;font-size:1em;padding:.5em;margin-top:.3em"></label>
+    <div class="row"><button class="btn primary" id="saveK" data-t="saveK"></button><button class="btn" id="testK" data-t="testK"></button><button class="btn" id="rmK" data-t="rmK"></button></div>
+    <div id="kst" class="small" aria-live="polite"></div>
+    <h3 data-t="howT"></h3><p class="small" data-t="how" style="white-space:pre-line"></p>
+    <p class="small"><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></p>
+    <button class="btn wide" id="closeSet" data-t="close"></button></dialog>
 </main>
 <script type="module" src="/src/main.ts"></script>
 </body></html>

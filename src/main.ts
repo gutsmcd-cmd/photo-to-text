@@ -2,15 +2,25 @@ import './style.css'
 type Lang = 'ja' | 'en'
 const T = {
   ja: { app: '写真から文字', big: '大きい文字', lead: '付せんやメモの写真から、文字を読み取ります。', take: '📷 写真をとる', pick: '🖼 写真をえらぶ',
-    cropHint: '指でなぞると、読みたい所だけを切り取れます。', reset: '元にもどす', mode: '読み方：', mAi: 'AI 手書き（ネット・試験中）', mOcr: '活字（ネットなし）',
+    cropHint: '指でなぞると、読みたい所だけを切り取れます。', reset: '元にもどす', mode: '読み方：', mAi: 'AI 手書き（キー・ネット）', mOcr: '活字（ネットなし）',
     read: '文字を読む', copy: 'コピー', share: '共有', save: '.txt で保存', copied: 'コピーしました', loading: '読んでいます…',
-    aiFail: 'AIにつながらなかったので、ネットなしの読み方に切り替えました（手書きは苦手です）。', done: 'できました。まちがいは直せます。',
-    note: 'AIの読み方では、写真が無料AIサービス Pollinations.ai に送られます（キーもログインも不要）。ひみつの写真には「活字」を使ってください。活字の読み方は一度使うと電波がなくても動きます。' },
+    aiFail: 'AIがうまくいかなかったので、ネットなしの「活字」で読みました（手書きは苦手です）。', done: 'できました。まちがいは直せます。',
+    usedAi: '読んだ方法：AI（{p}）。まちがいは直せます。', usedOcr: '読んだ方法：活字（ネットなし）。まちがいは直せます。', noKey: 'AIキーがないので、「活字」で読みました。⚙ 設定でキーを入れると手書きも読めます。',
+    set: '⚙ 設定', setT: 'AIキーの設定', prov: 'AIサービス：', keyL: 'キー（この端末にだけ保存）', saveK: '保存', testK: 'キーを試す', rmK: 'キーを消す',
+    saved: '保存しました。', removed: 'キーを消しました。', testing: '確認中…', ok: 'キーは使えます ✅', bad: 'キーが使えません：', none: 'まだキーがありません。',
+    howT: '無料の Gemini キーのとり方', close: '閉じる',
+    how: '1. aistudio.google.com/apikey を開き、Googleアカウントで入る。\n2. はじめてなら利用規約に同意する（プロジェクトとキーが自動でできることもあります）。\n3. 「Create API key（APIキーを作成）」を押し、プロジェクトをえらぶ。\n4. できたキーをコピーして、ここに貼り「保存」→「キーを試す」。\n支払い設定をしなければ無料枠のままです（回数に上限あり）。無料枠では送った写真がGoogleの改善に使われることがあります。',
+    note: 'キーはこの端末の中だけに保存され、AIで読むときだけ写真と一緒にGoogle（またはPollinations）へ送られます。ひみつの写真には「活字」を使ってください。活字は一度使うと電波がなくても動きます。' },
   en: { app: 'Photo to Text', big: 'Large text', lead: 'Turn a photo of sticky notes or a list into text.', take: '📷 Take photo', pick: '🖼 Pick photo',
-    cropHint: 'Drag a box with your finger to read only part of the photo.', reset: 'Reset', mode: 'Reader:', mAi: 'AI handwriting (online, beta)', mOcr: 'Printed (offline)',
+    cropHint: 'Drag a box with your finger to read only part of the photo.', reset: 'Reset', mode: 'Reader:', mAi: 'AI handwriting (key, online)', mOcr: 'Printed (offline)',
     read: 'Read text', copy: 'Copy', share: 'Share', save: 'Save .txt', copied: 'Copied', loading: 'Reading…',
-    aiFail: 'Couldn’t reach the AI, so I used the offline reader instead (it is weak on handwriting).', done: 'Done. You can fix any mistakes.',
-    note: 'The AI reader sends your photo to the free AI service Pollinations.ai (no key, no login). Use “Printed” for private photos. The printed reader works with no signal after its first use.' },
+    aiFail: 'The AI didn’t work, so I read it with the offline “Printed” reader (it is weak on handwriting).', done: 'Done. You can fix any mistakes.',
+    usedAi: 'Read with: AI ({p}). You can fix any mistakes.', usedOcr: 'Read with: Printed (offline). You can fix any mistakes.', noKey: 'No AI key yet, so I used the “Printed” reader. Add a key in ⚙ Settings to read handwriting.',
+    set: '⚙ Settings', setT: 'AI key settings', prov: 'AI service:', keyL: 'Key (saved only on this device)', saveK: 'Save', testK: 'Test key', rmK: 'Remove key',
+    saved: 'Saved.', removed: 'Key removed.', testing: 'Checking…', ok: 'The key works ✅', bad: 'The key didn’t work: ', none: 'No key saved yet.',
+    howT: 'How to get a free Gemini key', close: 'Close',
+    how: '1. Open aistudio.google.com/apikey and sign in with a Google account.\n2. If it is your first time, accept the terms (a project and key may be made for you).\n3. Tap “Create API key” and choose a project.\n4. Copy the key, paste it here, tap Save, then Test key.\nIf you never set up billing it stays on the free tier (with daily limits). On the free tier Google may use what you send to improve its products.',
+    note: 'Your key stays only on this device and is sent, with the photo, only to Google (or Pollinations) when you use the AI reader. Use “Printed” for private photos. The printed reader works with no signal after its first use.' },
 }
 const $ = <E extends HTMLElement>(id: string) => document.getElementById(id) as E
 let lang: Lang = (localStorage.getItem('p2t-lang') as Lang) || 'ja'
@@ -72,16 +82,56 @@ function output(): HTMLCanvasElement {
 }
 
 // ---- readers ----
-async function readAi(c: HTMLCanvasElement): Promise<string> {
-  const url = c.toDataURL('image/jpeg', 0.85)
-  const prompt = 'Transcribe ALL the text in this photo exactly as written (it may be handwritten Japanese or English, e.g. sticky notes). Keep each note and each line on its own line, in reading order; put a blank line between separate notes. Output only the text, no comments.'
-  const r = await fetch('https://text.pollinations.ai/openai', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'openai', messages: [{ role: 'user', content: [{ type: 'text', text: prompt }, { type: 'image_url', image_url: { url } }] }] }) })
-  if (!r.ok) throw new Error('ai ' + r.status)
-  const j = await r.json(); const s = j?.choices?.[0]?.message?.content
-  if (!s || typeof s !== 'string') throw new Error('ai empty')
-  return s.trim()
+type Prov = 'gemini' | 'pollinations'
+const PROMPT = 'Transcribe all the text in this image exactly as written. It may be handwritten or printed, in Japanese or English (or both), e.g. sticky notes or a list. Keep the original line breaks and reading order; put a blank line between separate notes. Do not translate, correct, summarise or add anything. Output only the transcribed text.'
+const GEM = 'gemini-3.8-flash', GEM_OLD = 'gemini-2.5-flash', POL = 'google/gemini-3.8-flash'
+const G = 'https://generativelanguage.googleapis.com/v1beta'
+const getProv = () => (localStorage.getItem('p2t-prov') as Prov) || 'gemini'
+const getKey = () => localStorage.getItem('p2t-key-' + getProv()) || ''
+async function err(r: Response) { let m = ''; try { const j = await r.json(); m = j?.error?.message || j?.message || '' } catch {} ; return new Error(`${r.status} ${m}`.trim()) }
+async function gemini(key: string, b64: string): Promise<string> {
+  const h = { 'Content-Type': 'application/json', 'x-goog-api-key': key }
+  // Interactions API (current docs, Oct 2026)
+  let r = await fetch(`${G}/interactions`, { method: 'POST', headers: h, body: JSON.stringify({ model: GEM,
+    input: [{ type: 'text', text: PROMPT }, { type: 'image', data: b64, mime_type: 'image/jpeg' }] }) })
+  if (r.ok) { const j = await r.json(); const s = j.output_text || (j.steps || []).filter((x: any) => x.type === 'model_output').flatMap((x: any) => x.content || []).filter((c: any) => c.type === 'text').map((c: any) => c.text).join('')
+    if (s) return s }
+  else if (r.status === 400 || r.status === 401 || r.status === 403 || r.status === 429) throw await err(r)
+  // fallback: classic generateContent
+  for (const m of [GEM, GEM_OLD]) {
+    r = await fetch(`${G}/models/${m}:generateContent`, { method: 'POST', headers: h, body: JSON.stringify({
+      contents: [{ parts: [{ text: PROMPT }, { inline_data: { mime_type: 'image/jpeg', data: b64 } }] }] }) })
+    if (r.ok) { const j = await r.json(); const s = (j?.candidates?.[0]?.content?.parts || []).map((p: any) => p.text || '').join(''); if (s) return s }
+    else if (r.status !== 404) throw await err(r)
+  }
+  throw new Error('empty')
 }
+async function pollinations(key: string, b64: string): Promise<string> {
+  const r = await fetch('https://gen.pollinations.ai/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
+    body: JSON.stringify({ model: POL, messages: [{ role: 'user', content: [{ type: 'text', text: PROMPT }, { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + b64 } }] }] }) })
+  if (!r.ok) throw await err(r)
+  const s = (await r.json())?.choices?.[0]?.message?.content
+  if (!s || typeof s !== 'string') throw new Error('empty'); return s
+}
+async function readAi(c: HTMLCanvasElement): Promise<string> {
+  const b64 = c.toDataURL('image/jpeg', 0.85).split(',')[1], key = getKey()
+  return (getProv() === 'gemini' ? await gemini(key, b64) : await pollinations(key, b64)).trim()
+}
+async function testKey(p: Prov, key: string) {
+  const r = p === 'gemini' ? await fetch(`${G}/models/${GEM}`, { headers: { 'x-goog-api-key': key } })
+    : await fetch('https://gen.pollinations.ai/account/balance', { headers: { Authorization: 'Bearer ' + key } })
+  if (!r.ok) throw await err(r)
+}
+// ---- settings ----
+const dlg = $<HTMLDialogElement>('settings'), sel = $<HTMLSelectElement>('prov'), kin = $<HTMLInputElement>('key'), kst = $('kst')
+const fill = () => { sel.value = getProv(); kin.value = getKey(); kst.textContent = getKey() ? '' : t('none') }
+$('openSet').onclick = () => { fill(); dlg.showModal() }
+$('closeSet').onclick = () => dlg.close()
+sel.onchange = () => { localStorage.setItem('p2t-prov', sel.value); fill() }
+$('saveK').onclick = () => { const k = kin.value.trim(); if (k) { localStorage.setItem('p2t-key-' + sel.value, k); kst.textContent = t('saved'); mode = 'ai'; localStorage.setItem('p2t-mode', mode); setMode() } }
+$('rmK').onclick = () => { localStorage.removeItem('p2t-key-' + sel.value); kin.value = ''; kst.textContent = t('removed') }
+$('testK').onclick = async () => { const k = kin.value.trim(); if (!k) { kst.textContent = t('none'); return }
+  kst.textContent = t('testing'); try { await testKey(sel.value as Prov, k); kst.textContent = t('ok') } catch (e) { kst.textContent = t('bad') + (e as Error).message } }
 async function readOcr(c: HTMLCanvasElement): Promise<string> {
   const { createWorker } = await import('tesseract.js')
   const w = await createWorker(['jpn', 'eng'], 1, { logger: (m: { status: string; progress: number }) => { $('status').textContent = `${t('loading')} ${Math.round(m.progress * 100)}%` } })
@@ -91,10 +141,11 @@ async function readOcr(c: HTMLCanvasElement): Promise<string> {
 $('read').onclick = async () => {
   const c = output(), st = $('status'), btn = $<HTMLButtonElement>('read')
   btn.disabled = true; st.textContent = t('loading')
-  let text = '', note = t('done')
+  let text = '', note = t('usedOcr')
   try {
-    if (mode === 'ai') { try { text = await readAi(c) } catch { note = t('aiFail'); text = await readOcr(c) } }
-    else text = await readOcr(c)
+    if (mode === 'ai' && getKey()) { try { text = await readAi(c); note = t('usedAi').replace('{p}', getProv() === 'gemini' ? 'Google Gemini' : 'Pollinations') }
+      catch (e) { text = await readOcr(c); note = t('aiFail') + ' (' + (e as Error).message + ')' } }
+    else { text = await readOcr(c); if (mode === 'ai') note = t('noKey') }
   } catch (e) { note = String(e) }
   st.textContent = note; btn.disabled = false
   $<HTMLTextAreaElement>('txt').value = text; $('out').hidden = false; $('out').scrollIntoView({ behavior: 'smooth' })

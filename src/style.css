@@ -21,3 +21,7 @@ main { max-width:40rem; margin:0 auto; padding:1rem; }
 textarea { width:100%; font:inherit; padding:.7rem; border-radius:12px; border:2px solid var(--sage); background:var(--card); color:var(--ink); }
 .small { font-size:.9rem; }
 .note { font-size:.9rem; opacity:.75; margin-top:1.5rem; }
+dialog#settings{border:none;border-radius:18px;max-width:34em;width:92vw;padding:1.2em;background:#fbf8f4;color:inherit}
+dialog#settings::backdrop{background:rgba(40,35,35,.45)}
+dialog#settings label{display:block;margin:.6em 0}
+dialog#settings select{font-size:1em;padding:.3em}
