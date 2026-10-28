@@ -2,12 +2,12 @@ import './style.css'
 type Lang = 'ja' | 'en'
 const T = {
   ja: { app: '写真から文字', big: '大きい文字', lead: '付せんやメモの写真から、文字を読み取ります。', take: '📷 写真をとる', pick: '🖼 写真をえらぶ',
-    cropHint: '指でなぞると、読みたい所だけを切り取れます。', reset: '元にもどす', mode: '読み方：', mAi: 'AI（手書きOK・ネット）', mOcr: '活字（ネットなし）',
+    cropHint: '指でなぞると、読みたい所だけを切り取れます。', reset: '元にもどす', mode: '読み方：', mAi: 'AI 手書き（ネット・試験中）', mOcr: '活字（ネットなし）',
     read: '文字を読む', copy: 'コピー', share: '共有', save: '.txt で保存', copied: 'コピーしました', loading: '読んでいます…',
     aiFail: 'AIにつながらなかったので、ネットなしの読み方に切り替えました（手書きは苦手です）。', done: 'できました。まちがいは直せます。',
     note: 'AIの読み方では、写真が無料AIサービス Pollinations.ai に送られます（キーもログインも不要）。ひみつの写真には「活字」を使ってください。活字の読み方は一度使うと電波がなくても動きます。' },
   en: { app: 'Photo to Text', big: 'Large text', lead: 'Turn a photo of sticky notes or a list into text.', take: '📷 Take photo', pick: '🖼 Pick photo',
-    cropHint: 'Drag a box with your finger to read only part of the photo.', reset: 'Reset', mode: 'Reader:', mAi: 'AI (handwriting, online)', mOcr: 'Printed (offline)',
+    cropHint: 'Drag a box with your finger to read only part of the photo.', reset: 'Reset', mode: 'Reader:', mAi: 'AI handwriting (online, beta)', mOcr: 'Printed (offline)',
     read: 'Read text', copy: 'Copy', share: 'Share', save: 'Save .txt', copied: 'Copied', loading: 'Reading…',
     aiFail: 'Couldn’t reach the AI, so I used the offline reader instead (it is weak on handwriting).', done: 'Done. You can fix any mistakes.',
     note: 'The AI reader sends your photo to the free AI service Pollinations.ai (no key, no login). Use “Printed” for private photos. The printed reader works with no signal after its first use.' },
@@ -26,7 +26,7 @@ if (localStorage.getItem('p2t-big') === '1') { document.documentElement.classLis
 big.onclick = () => { const on = document.documentElement.classList.toggle('big'); big.setAttribute('aria-pressed', String(on)); localStorage.setItem('p2t-big', on ? '1' : '0') }
 applyLang()
 
-let mode = localStorage.getItem('p2t-mode') || 'ai'
+let mode = localStorage.getItem('p2t-mode') || 'ocr'
 const setMode = () => document.querySelectorAll<HTMLElement>('.m').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.m === mode)))
 document.querySelectorAll<HTMLElement>('.m').forEach((b) => (b.onclick = () => { mode = b.dataset.m!; localStorage.setItem('p2t-mode', mode); setMode() }))
 setMode()
